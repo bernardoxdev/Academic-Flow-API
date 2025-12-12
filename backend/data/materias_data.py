@@ -27,6 +27,7 @@ NOMES_MATERIAS = {
     'lab_si': 'Laboratório de Sistemas Digitais e Computacionais',
     'mat_discreta': 'Matemática Discreta',
     'matIII': 'Matemática III',
+    'grafos': 'Grafos',
     'p_modular': 'Programação Modular',
     
     # 4° Semestre
@@ -101,7 +102,8 @@ MATERIAS_ENUMERADAS = {
     37: 'metodologia_cientifica',
     38: 'oficina_software',
     39: 'redes_computadores',
-    40: 'computadores_sociedade'
+    40: 'computadores_sociedade',
+    41: 'grafos'
 }
 
 # Dicionário de pré-requisitos

@@ -21,4 +21,4 @@ def gerar_data() -> None:
     pl.DataFrame(rows).write_parquet(os.path.join(PARQUET_DIR, "prerequisitos.parquet"))
     
 if __name__ == '__main__':
-    pass
+    gerar_data()

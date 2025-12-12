@@ -4,17 +4,21 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from backend.core.limiter import limiter
+
 from backend.api.auth import router as auth_router
 from backend.api.alunos import router as alunos_router
 from backend.api.fluxograma import router as fluxograma_router
+from backend.api.data_materias import router as data_materias_router
+from backend.api.atividades import router as atividades_router
+from backend.api.boca import router as boca_router
 
 app = FastAPI(
     title="Academic Flow API",
     summary="API para gerenciamento acadêmico e fluxograma de disciplinas",
     description="""
     API responsável por fornecer dados acadêmicos como:
-    - Fluxograma do curso [0/100]
-    - Pré-requisitos de disciplinas [0/100]
+    - Fluxograma do curso [OK]
+    - Pré-requisitos de disciplinas [80/100]
     - Validação de matrícula de alunos [0/100]
     - Classificação da dificuldade das matérias [0/100]
     - Dados sobre as matérias [0/100]
@@ -41,6 +45,9 @@ async def rate_limit_handler(request, exc):
 app.include_router(auth_router)
 app.include_router(alunos_router)
 app.include_router(fluxograma_router)
+app.include_router(data_materias_router)
+app.include_router(atividades_router)
+app.include_router(boca_router)
 
 if __name__ == '__main__':
     pass

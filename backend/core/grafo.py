@@ -27,5 +27,17 @@ class GrafoMaterias:
 
         return ordem
     
+def coletar_prerequisitos(mapa, materia):
+    visitados = set()
+
+    def dfs(atual):
+        for prereq in mapa.get(atual, []):
+            if prereq not in visitados:
+                visitados.add(prereq)
+                dfs(prereq)
+
+    dfs(materia)
+    return visitados
+    
 if __name__ == '__main__':
     pass
