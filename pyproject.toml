@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "academic-flow"
-version = "BETA"
-description = "API acadêmica com FastAPI, Polars e Fluxograma de Pré-requisitos"
+version = "0.1.0"
+description = "API acadêmica com FastAPI, autenticação JWT, Polars e fluxograma de pré-requisitos"
 authors = [
     { name = "Bernardo de Castro", email = "bernardocmfgomes@gmail.com" }
 ]
@@ -13,18 +13,35 @@ readme = "README.md"
 requires-python = ">=3.9"
 
 dependencies = [
-    "fastapi",
-    "uvicorn[standard]",
-    "polars",
-    "pydantic"
+    # Web framework
+    "fastapi==0.115.6",
+    "uvicorn[standard]==0.34.0",
+
+    # Autenticação e segurança
+    "python-jose[cryptography]==3.5.0",
+    "passlib[bcrypt]==1.7.4",
+    "bcrypt<5",
+
+    # Banco de dados
+    "sqlalchemy==2.0.45",
+
+    # Rate limit
+    "slowapi==0.1.9",
+    "limits>=2.3",
+
+    # Configuração
+    "python-dotenv==1.0.1",
+
+    # Dados
+    "polars==1.8.2"
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest",
-    "httpx"
+    "pytest==8.3.4",
+    "httpx==0.27.2"
 ]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
-testpaths = ["tests"]
+testpaths = ["backend/tests"]
