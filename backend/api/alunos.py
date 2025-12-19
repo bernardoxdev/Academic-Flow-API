@@ -23,7 +23,7 @@ def pode_cursar(data: PodeCursarRequest):
     }
 
 @router.get(
-    "/listar_alunos",
+    "/listar-alunos",
     dependencies=[Depends(require_role("admin"))]
 )
 def listar_alunos(

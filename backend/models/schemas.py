@@ -11,6 +11,11 @@ class LoginRequest(BaseModel):
 class RegisterRequest(BaseModel):
     username: str
     password: str
+    
+class RegisterRequest(BaseModel):
+    username: str
+    password: str
+    role: str
 
 class ChangePasswordRequest(BaseModel):
     new_password: str
