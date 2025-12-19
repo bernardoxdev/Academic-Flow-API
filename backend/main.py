@@ -5,6 +5,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from backend.core.limiter import limiter
+from backend.data.seed import criar_admin_se_nao_existir
 
 from backend.api.auth import router as auth_router
 from backend.api.alunos import router as alunos_router
@@ -23,7 +24,8 @@ app = FastAPI(
     summary="API para gerenciamento acadêmico e fluxograma de disciplinas",
     description="""
     API responsável por fornecer dados acadêmicos como:
-    - Fluxograma do curso [OK]
+    - Sistema de Login e Autenticação [80/100]
+    - Fluxograma do curso [80/100]
     - Pré-requisitos de disciplinas [80/100]
     - Validação de matrícula de alunos [0/100]
     - Classificação da dificuldade das matérias [0/100]
@@ -60,6 +62,10 @@ async def rate_limit_handler(request, exc):
         status_code=429,
         content={"detail": "Rate limit exceeded"}
     )
+    
+@app.on_event("startup")
+def startup():
+    criar_admin_se_nao_existir()
 
 app.include_router(auth_router)
 app.include_router(alunos_router)

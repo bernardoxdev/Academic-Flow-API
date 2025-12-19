@@ -1,5 +1,8 @@
 from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
+from backend.core.database import get_db
+from backend.models.user import User
 from backend.models.schemas import PodeCursarRequest
 from backend.core.regras import RegrasAcademicas
 from backend.core.security import require_role
@@ -19,19 +22,20 @@ def pode_cursar(data: PodeCursarRequest):
         "pode_cursar": regras.pode_cursar(data.aluno_id, data.materia)
     }
 
-@router.post(
-    "/cadastrar_aluno",
-    dependencies=[Depends(require_role("monitor", "admin"))]
-)
-def cadastrar_aluno():
-    return {"status": "aluno cadastrado"}
-
 @router.get(
     "/listar_alunos",
     dependencies=[Depends(require_role("admin"))]
 )
-def listar_alunos():
-    return {"alunos": []}
+def listar_alunos(
+    db: Session = Depends(get_db)
+):
+    registros = (
+        db.query(User)
+        .filter_by(role="aluno")
+        .all()
+    )
+    
+    return {"alunos": registros}
 
 if __name__ == '__main__':
     pass
