@@ -172,5 +172,22 @@ def change_password(
 
     return {"status": "senha atualizada"}
 
+@router.post("/logout")
+def logout(
+    refresh_token: str,
+    db: Session = Depends(get_db)
+):
+    token = (
+        db.query(RefreshToken)
+        .filter(RefreshToken.token == refresh_token)
+        .first()
+    )
+
+    if token:
+        db.delete(token)
+        db.commit()
+
+    return {"detail": "Logout realizado"}
+
 if __name__ == '__main__':
     pass
