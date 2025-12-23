@@ -23,8 +23,8 @@ app = FastAPI(
     summary="API para gerenciamento acadêmico e fluxograma de disciplinas",
     description="""
     API responsável por fornecer dados acadêmicos como:
-    - Sistema de Login e Autenticação [80/100]
-    - Fluxograma do curso [80/100]
+    - Sistema de Login e Autenticação [OK]
+    - Fluxograma do curso [90/100]
     - Pré-requisitos de disciplinas [80/100]
     - Validação de matrícula de alunos [0/100]
     - Classificação da dificuldade das matérias [0/100]
