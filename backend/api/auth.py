@@ -24,12 +24,22 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+def is_matricula(valor: str) -> bool:
+    return valor.isdigit() and len(valor) == 10
+
 @router.post("/login", status_code=status.HTTP_201_CREATED)
 def login(
     data: LoginRequest,
     db: Session = Depends(get_db)
 ):
-    user = db.query(User).filter(User.username == data.username).first()
+    dado = data.dadoLogin.strip()
+
+    if is_valid_email(dado):
+        user = db.query(User).filter(User.email == dado).first()
+    elif dado.isdigit() and len(dado) == 10:
+        user = db.query(User).filter(User.matricula == dado).first()
+    else:
+        user = db.query(User).filter(User.username == dado).first()
 
     if not user or not pwd_context.verify(data.password, user.hashed_password):
         raise HTTPException(

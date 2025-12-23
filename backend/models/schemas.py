@@ -8,7 +8,7 @@ class PodeCursarAlunoRequest(BaseModel):
     materia: str
 
 class LoginRequest(BaseModel):
-    username: str
+    dadoLogin: str
     password: str
 
 class RegisterRequest(BaseModel):
