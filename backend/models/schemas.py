@@ -10,10 +10,14 @@ class LoginRequest(BaseModel):
 
 class RegisterRequest(BaseModel):
     username: str
+    email: str
+    matricula: int
     password: str
     
 class RegisterAdminRequest(BaseModel):
     username: str
+    email: str
+    matricula: int
     password: str
     role: str
 

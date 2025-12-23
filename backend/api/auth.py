@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from jose import jwt, JWTError
+from brutils import is_valid_email
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 
@@ -23,8 +24,11 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-@router.post("/login")
-def login(data: LoginRequest, db: Session = Depends(get_db)):
+@router.post("/login", status_code=status.HTTP_201_CREATED)
+def login(
+    data: LoginRequest,
+    db: Session = Depends(get_db)
+):
     user = db.query(User).filter(User.username == data.username).first()
 
     if not user or not pwd_context.verify(data.password, user.hashed_password):
@@ -32,13 +36,6 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Credenciais inválidas"
         )
-
-    if user.must_change_password:
-        return {
-            "detail": "Troca de senha obrigatória",
-            "must_change_password": True,
-            "user_id": user.id
-        }
 
     payload = {
         "sub": str(user.id),
@@ -107,30 +104,60 @@ def refresh(refresh_token: str, db: Session = Depends(get_db)):
         "token_type": "bearer"
     }
 
-@router.post("/register")
-def register(data: RegisterRequest, db: Session = Depends(get_db)):
+@router.post("/register", status_code=status.HTTP_201_CREATED)
+def register(
+    data: RegisterRequest,
+    db: Session = Depends(get_db)
+):
     if db.query(User).filter(User.username == data.username).first():
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_409_CONFLICT,
             detail="Usuário já existe"
+        )
+        
+    if not is_valid_email(data.email):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Email inválido"
         )
 
     user = User(
         username=data.username,
+        email=data.email,
+        matricula=data.matricula,
         hashed_password=pwd_context.hash(data.password),
         role="aluno",
-        must_change_password=False
     )
 
     try:
         db.add(user)
         db.commit()
+        db.refresh(user)
     except Exception:
         db.rollback()
         raise HTTPException(500, "Erro ao criar usuário")
 
-    return {"status": "usuário criado"}
+    payload = {
+        "sub": str(user.id),
+        "role": user.role
+    }
 
+    access_token = create_access_token(payload)
+    refresh_token = create_refresh_token({"sub": str(user.id)})
+
+    try:
+        db.add(RefreshToken(token=refresh_token, user_id=user.id))
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise HTTPException(500, "Erro ao gerar tokens")
+
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer"
+    }
+    
 @router.post("/change-password")
 def change_password(
     data: ChangePasswordRequest,
@@ -140,7 +167,6 @@ def change_password(
     user = db.query(User).filter(User.id == current_user.id).first()
 
     user.hashed_password = pwd_context.hash(data.new_password)
-    user.must_change_password = False
 
     db.commit()
 
