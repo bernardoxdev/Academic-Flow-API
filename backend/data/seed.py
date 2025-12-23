@@ -17,6 +17,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 ADMIN_ROLE = os.getenv("ADMIN_ROLE")
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
 
 def criar_admin_se_nao_existir():
     db: Session = SessionLocal()
@@ -26,9 +27,10 @@ def criar_admin_se_nao_existir():
     if not admin:
         admin = User(
             username=ADMIN_USERNAME,
+            email=ADMIN_EMAIL,
+            matricula="0000000000",
             hashed_password=pwd_context.hash(ADMIN_PASSWORD),
-            role=ADMIN_ROLE,
-            must_change_password=False
+            role=ADMIN_ROLE
         )
         db.add(admin)
         db.commit()

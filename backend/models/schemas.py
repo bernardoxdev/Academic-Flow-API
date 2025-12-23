@@ -11,13 +11,13 @@ class LoginRequest(BaseModel):
 class RegisterRequest(BaseModel):
     username: str
     email: str
-    matricula: int
+    matricula: str
     password: str
     
 class RegisterAdminRequest(BaseModel):
     username: str
     email: str
-    matricula: int
+    matricula: str
     password: str
     role: str
 
