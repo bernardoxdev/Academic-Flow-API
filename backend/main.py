@@ -10,7 +10,7 @@ from backend.data.seed import criar_admin_se_nao_existir
 from backend.api.auth import router as auth_router
 from backend.api.alunos import router as alunos_router
 from backend.api.fluxograma import router as fluxograma_router
-from backend.api.data_materias import router as data_materias_router
+from backend.api.materias import router as data_materias_router
 from backend.api.atividades import router as atividades_router
 from backend.api.boca import router as boca_router
 

@@ -1,0 +1,443 @@
+import polars as pl
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+from datetime import date
+
+from backend.core.database import get_db
+from backend.core.lazy_loader import LazyLoader
+from backend.core.security import (
+    get_current_user,
+    require_role
+)
+from backend.models.user import User
+from backend.models.comentario_materia import ComentarioMateria
+from backend.models.nota_materia import NotaMateria
+from backend.models.dificuldade_materia import DificuldadeMateria
+from backend.models.fazendo_materia import FazendoMateria
+from backend.models.schemas import (
+    MateriaFazendo,
+    AdicionarComentario,
+    AtualizarComentario,
+    DeletarComentario,
+    AdicionarDificuldade,
+    AtualizarDificuldade,
+    RemoverDificuldade,
+    AdicionarNota,
+    AtualizarNota,
+    RemoverNota
+)
+
+router = APIRouter(
+    prefix="/materias",
+    tags=["Dados das Matérias"]
+)
+
+@router.get(
+    '/', status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_role("aluno"))]
+)
+def index():
+    materias = LazyLoader.materias()
+    
+    df = (
+        materias.
+        select([
+            pl.col("codigo").alias("id"),
+            pl.col("nome")
+        ])
+    )
+    
+    if df.is_empty():
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="nenhuma matéria encontrada")
+    
+    return df.to_dicts()
+    
+@router.get(
+    '/fazendo', status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_role("aluno"))]
+)
+def get_fazendo(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    aluno_id = current_user.id
+    
+    registro = (
+        db.query(FazendoMateria)
+        .filter_by(
+            aluno_id=aluno_id,
+            fazendo=True
+        )
+        .all()
+    )
+    
+    if not registro:
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="não encontrado")
+    
+    materias_fazendo = [ registro.id_materia for registro in registro ]
+    
+    return {
+        "materias": materias_fazendo
+    }
+
+@router.get(
+    '/marcar-fazendo', status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_role("aluno"))]
+)
+def marcar_get(
+    data: MateriaFazendo,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    aluno_id = current_user.id
+    
+    registro = (
+        db.query(FazendoMateria)
+        .filter_by(
+            aluno_id=aluno_id,
+            id_materia=data.id_materia
+        )
+        .first()
+    )
+    
+    if not registro:
+        registro = FazendoMateria(
+            id_materia=data.id_materia,
+            id_aluno=aluno_id,
+            fazendo=True
+        )
+        db.add(registro)
+    else:
+        registro.fazendo = True
+        
+    db.commit()
+    
+    return {"status": "ok"}
+
+@router.get(
+    '/desmarcar-fazendo', status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_role("aluno"))]
+)
+def desmarcar_get(
+    data: MateriaFazendo,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    aluno_id = current_user.id
+    
+    registro = (
+        db.query(FazendoMateria)
+        .filter_by(
+            aluno_id=aluno_id,
+            id_materia=data.id_materia
+        )
+        .first()
+    )
+    
+    if not registro:
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="não encontrado")
+    
+    registro.fazendo = False
+    db.commit()
+    
+    return {"status": "ok"}
+
+@router.get('/comentarios', status_code=status.HTTP_200_OK)
+def get_comentarios(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    aluno_id = current_user.id
+    
+    registro = (
+        db.query(ComentarioMateria)
+        .filter_by(
+            aluno_id=aluno_id,
+            fazendo=True
+        )
+        .all()
+    )
+    
+    if not registro:
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="não encontrado")
+    
+    comentarios = {}
+    
+    for r in registro:
+        comentarios[r.id_materia] = r.comentario    
+    
+    return comentarios
+
+@router.get(
+    '/adicionar-comentario', status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_role("aluno"))]
+)
+def adicionar_comentario(
+    data: AdicionarComentario,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    aluno_id = current_user.id
+    
+    registro = (
+        db.query(ComentarioMateria)
+        .filter_by(
+            aluno_id=aluno_id,
+            id_materia=data.id_materia
+        )
+        .first()
+    )
+    
+    if registro:
+        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="já existe")
+    
+    registro = ComentarioMateria(
+        id_materia=data.id_materia,
+        id_aluno=aluno_id,
+        comentario=data.comentario
+    )
+    db.add(registro)
+    db.commit()
+    
+    return {"status": "ok"}
+
+@router.get(
+    '/deletar-comentario', status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_role("aluno"))]
+)
+def deletar_comentario(
+    data: DeletarComentario,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    aluno_id = current_user.id
+    
+    registro = (
+        db.query(ComentarioMateria)
+        .filter_by(
+            id=data.id_comentario,
+            id_aluno=aluno_id
+        )
+        .first()
+    )
+    
+    if not registro:
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="não encontrado")
+    
+    db.delete()
+    db.commit()
+    
+    return {"status": "ok"}
+
+@router.get(
+    '/atualizar-comentario', status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_role("aluno"))]
+)
+def atualizar_comentario(
+    data: AtualizarComentario,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    aluno_id = current_user.id
+    
+    registro = (
+        db.query(ComentarioMateria)
+        .filter_by(
+            aluno_id=aluno_id,
+            id_materia=data.id_materia
+        )
+        .first()
+    )
+    
+    if not registro:
+        return 
+    
+    registro.comentario = data.comentario
+        
+    db.commit()
+    
+    return {"status": "ok"}
+
+@router.get(
+    '/adicionar-nota', status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_role("aluno"))]
+)
+def adicionar_nota(
+    data: AdicionarNota,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    aluno_id = current_user.id
+    
+    registro = (
+        db.query(NotaMateria)
+        .filter_by(
+            aluno_id=aluno_id,
+            id_materia=data.id_materia
+        )
+        .first()
+    )
+    
+    if registro:
+        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="já existe")    
+        
+    registro = NotaMateria(
+        id_materia=data.id_materia,
+        id_aluno=aluno_id,
+        nota=data.nota
+    )
+    db.add(registro)
+    db.commit()
+    
+    return {"status": "ok"}
+
+@router.get(
+    '/deletar-nota', status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_role("aluno"))]
+)
+def deletar_nota(
+    data: RemoverNota,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    aluno_id = current_user.id
+    
+    registro = (
+        db.query(NotaMateria)
+        .filter_by(
+            id=data.id_nota,
+            id_aluno=aluno_id
+        )
+        .first()
+    )
+    
+    if not registro:
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="não encontrado")
+    
+    db.delete()
+    db.commit()
+    
+    return {"status": "ok"}
+
+@router.get(
+    '/atualizar-nota', status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_role("aluno"))]
+)
+def atualizar_nota(
+    data: AtualizarNota,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    aluno_id = current_user.id
+    
+    registro = (
+        db.query(NotaMateria)
+        .filter_by(
+            id=data.id_nota,
+            id_aluno=aluno_id
+        )
+        .first()
+    )
+    
+    if not registro:
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="não encontrado")
+    
+    registro.nota = data.nova_nota
+    
+    db.commit()
+    
+    return {"status": "ok"}
+
+@router.get(
+    '/adicionar-dificuldade', status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_role("aluno"))]
+)
+def adicionar_dificuldade(
+    data: AdicionarDificuldade,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    aluno_id = current_user.id
+    
+    registro = (
+        db.query(DificuldadeMateria)
+        .filter_by(
+            aluno_id=aluno_id,
+            id_materia=data.id_materia
+        )
+        .first()
+    )
+    
+    if registro:
+        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="já existe")    
+        
+    registro = DificuldadeMateria(
+        id_materia=data.id_materia,
+        id_aluno=aluno_id,
+        dificuldade=data.dificuldade
+    )
+    db.add(registro)
+    db.commit()
+    
+    return {"status": "ok"}
+
+@router.get(
+    '/deletar-dificuldade', status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_role("aluno"))]
+)
+def deletar_dificuldade(
+    data: RemoverDificuldade,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    aluno_id = current_user.id
+    
+    registro = (
+        db.query(DificuldadeMateria)
+        .filter_by(
+            id=data.id_dificuldade,
+            id_aluno=aluno_id
+        )
+        .first()
+    )
+    
+    if not registro:
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="não encontrado")
+    
+    db.delete()
+    db.commit()
+    
+    return {"status": "ok"}
+
+@router.get(
+    '/atualizar-dificuldade', status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_role("aluno"))]
+)
+def atualizar_dificuldade(
+    data: AtualizarDificuldade,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    aluno_id = current_user.id
+    
+    registro = (
+        db.query(DificuldadeMateria)
+        .filter_by(
+            id=data.id_dificuldade,
+            id_aluno=aluno_id
+        )
+        .first()
+    )
+    
+    if not registro:
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="não encontrado")
+    
+    registro.dificuldade = data.nova_dificuldade
+    
+    db.commit()
+    
+    return {"status": "ok"}
+
+if __name__ == '__main__':
+    pass
