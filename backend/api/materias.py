@@ -107,6 +107,37 @@ def get_comentarios(
     
     return {"comentarios": comentarios}
 
+@router.get("/comentarios/todos", status_code=status.HTTP_200_OK)
+def get_comentarios(
+    db: Session = Depends(get_db)
+):
+    registros = db.query(ComentarioMateria).all()
+
+    if not registros:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Nenhum comentário encontrado"
+        )
+
+    comentarios = {}
+
+    for r in registros:
+        if r.comentario:
+            if r.id_aluno not in comentarios:
+                comentarios[r.id_aluno] = {}
+
+            comentarios[r.id_aluno][r.id_materia] = r.comentario
+
+    comentarios = {k: v for k, v in comentarios.items() if v}
+
+    if not comentarios:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Nenhum comentário válido encontrado"
+        )
+
+    return {"comentarios": comentarios}
+
 @router.get(
     '/dificuldades', status_code=status.HTTP_200_OK,
     dependencies=[Depends(require_role("aluno"))]
