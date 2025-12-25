@@ -22,6 +22,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 @router.post(
     "/register",
+    summary="Registrar novo usuário",
+    description="Registra um novo usuário",
     dependencies=[Depends(require_role("admin"))]
 )
 def register(data: RegisterAdminRequest, db: Session = Depends(get_db)):

@@ -16,7 +16,10 @@ from backend.models.user import User
 
 router = APIRouter(prefix="/fluxograma", tags=["Fluxograma"])
 
-@router.get("/", status_code=status.HTTP_200_OK)
+@router.get(
+    "/", status_code=status.HTTP_200_OK,
+    description="Retorna o fluxograma completo de matérias com seus pré-requisitos"
+)
 def fluxograma():
     materias = LazyLoader.materias()
     prereqs = LazyLoader.prerequisitos()
@@ -69,7 +72,10 @@ def fluxograma():
 
     return df.to_dicts()
 
-@router.get("/requisitos-completos", status_code=status.HTTP_200_OK)
+@router.get(
+    "/requisitos-completos", status_code=status.HTTP_200_OK,
+    description="Retorna a lista completa de pré-requisitos para uma matéria"
+)
 def requisitos_completos(codigo: str = Query(...)):
     prereqs_df = LazyLoader.prerequisitos().collect()
     materias_df = LazyLoader.materias().collect()
@@ -111,6 +117,7 @@ def requisitos_completos(codigo: str = Query(...)):
 
 @router.post(
     "/progresso", status_code=status.HTTP_200_OK,
+    description="Retorna o progresso do aluno nas matérias",
     dependencies=[Depends(require_role("aluno"))]
 )
 def progresso_aluno(
@@ -137,6 +144,7 @@ def progresso_aluno(
 
 @router.post(
     "/concluir", status_code=status.HTTP_200_OK,
+    description="Marca uma matéria como concluída para o aluno",
     dependencies=[Depends(require_role("aluno"))]
 )
 def concluir_materia(
@@ -172,6 +180,7 @@ def concluir_materia(
 
 @router.post(
     "/desmarcar", status_code=status.HTTP_200_OK,
+    description="Desmarca uma matéria como concluída para o aluno",
     dependencies=[Depends(require_role("aluno"))]
 )
 def desmarcar_materia(

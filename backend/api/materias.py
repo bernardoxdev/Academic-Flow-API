@@ -2,7 +2,6 @@ import polars as pl
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from datetime import date
 
 from backend.core.database import get_db
 from backend.core.lazy_loader import LazyLoader
@@ -36,6 +35,8 @@ router = APIRouter(
 
 @router.get(
     '/', status_code=status.HTTP_200_OK,
+    summary="Listar todas as matérias",
+    description="Retorna a lista de todas as matérias disponíveis",
     dependencies=[Depends(require_role("aluno"))]
 )
 def index():
@@ -56,6 +57,8 @@ def index():
     
 @router.get(
     '/fazendo', status_code=status.HTTP_200_OK,
+    summary="Listar matérias que o aluno está fazendo",
+    description="Retorna a lista de matérias que o aluno autenticado está fazendo",
     dependencies=[Depends(require_role("aluno"))]
 )
 def get_fazendo(
@@ -82,7 +85,12 @@ def get_fazendo(
         "materias": materias_fazendo
     }
 
-@router.get('/comentarios', status_code=status.HTTP_200_OK)
+@router.get(
+    '/comentarios', status_code=status.HTTP_200_OK,
+    summary="Listar comentários do aluno",
+    description="Retorna a lista de comentários feitos pelo aluno autenticado",
+    dependencies=[Depends(require_role("aluno"))]
+)
 def get_comentarios(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -107,7 +115,11 @@ def get_comentarios(
     
     return {"comentarios": comentarios}
 
-@router.get("/comentarios/todos", status_code=status.HTTP_200_OK)
+@router.get(
+    "/comentarios/todos", status_code=status.HTTP_200_OK,
+    summary="Listar todos os comentários",
+    description="Retorna a lista de todos os comentários feitos por todos os alunos"
+)
 def get_todos_comentarios(
     db: Session = Depends(get_db)
 ):
@@ -138,7 +150,11 @@ def get_todos_comentarios(
 
     return {"comentarios": comentarios}
 
-@router.get("/comentarios/todos/materia", status_code=status.HTTP_200_OK)
+@router.get(
+    "/comentarios/todos/materia", status_code=status.HTTP_200_OK,
+    summary="Listar todos os comentários de uma matéria específica",
+    description="Retorna a lista de todos os comentários feitos por todos os alunos para uma matéria específica"
+)
 def get_todos_comentarios_materia(
     id_materia: int,
     db: Session = Depends(get_db)
@@ -171,6 +187,8 @@ def get_todos_comentarios_materia(
 
 @router.get(
     '/dificuldades', status_code=status.HTTP_200_OK,
+    summary="Lista o nível de dificuldade das matérias do aluno",
+    description="Retorna o nível de dificuldade que o aluno autenticado atribuiu às matérias",
     dependencies=[Depends(require_role("aluno"))]
 )
 def get_dificuldades(
@@ -199,6 +217,8 @@ def get_dificuldades(
 
 @router.get(
     '/notas', status_code=status.HTTP_200_OK,
+    summary="Lista as notas das matérias do aluno",
+    description="Retorna as notas que o aluno autenticado atribuiu às matérias",
     dependencies=[Depends(require_role("aluno"))]
 )
 def get_notas(
@@ -227,6 +247,8 @@ def get_notas(
 
 @router.get(
     '/faltando', status_code=status.HTTP_200_OK,
+    summary="Listar matérias faltando para o aluno",
+    description="Retorna a lista de matérias que o aluno autenticado ainda não concluiu",
     dependencies=[Depends(require_role("aluno"))]
 )
 def get_faltando(
@@ -255,6 +277,8 @@ def get_faltando(
 
 @router.post(
     '/marcar-fazendo', status_code=status.HTTP_200_OK,
+    summary="Marcar matéria como sendo feita",
+    description="Marca uma matéria como sendo feita pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
 )
 def marcar_get(
@@ -289,6 +313,8 @@ def marcar_get(
 
 @router.post(
     '/desmarcar-fazendo', status_code=status.HTTP_200_OK,
+    summary="Desmarcar matéria como sendo feita",
+    description="Desmarca uma matéria como sendo feita pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
 )
 def desmarcar_get(
@@ -317,6 +343,8 @@ def desmarcar_get(
 
 @router.post(
     '/adicionar-comentario', status_code=status.HTTP_201_CREATED,
+    summary="Adicionar comentário a uma matéria",
+    description="Adiciona um comentário a uma matéria pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
 )
 def adicionar_comentario(
@@ -350,6 +378,8 @@ def adicionar_comentario(
 
 @router.post(
     '/deletar-comentario', status_code=status.HTTP_200_OK,
+    summary="Deletar comentário de uma matéria",
+    description="Deleta um comentário de uma matéria feito pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
 )
 def deletar_comentario(
@@ -378,6 +408,8 @@ def deletar_comentario(
 
 @router.post(
     '/atualizar-comentario', status_code=status.HTTP_200_OK,
+    summary="Atualizar comentário de uma matéria",
+    description="Atualiza um comentário de uma matéria feito pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
 )
 def atualizar_comentario(
@@ -407,6 +439,8 @@ def atualizar_comentario(
 
 @router.post(
     '/adicionar-nota', status_code=status.HTTP_201_CREATED,
+    summary="Adicionar nota a uma matéria",
+    description="Adiciona uma nota a uma matéria pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
 )
 def adicionar_nota(
@@ -440,6 +474,8 @@ def adicionar_nota(
 
 @router.post(
     '/deletar-nota', status_code=status.HTTP_200_OK,
+    summary="Deletar nota de uma matéria",
+    description="Deleta uma nota de uma matéria feita pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
 )
 def deletar_nota(
@@ -468,6 +504,8 @@ def deletar_nota(
 
 @router.post(
     '/atualizar-nota', status_code=status.HTTP_200_OK,
+    summary="Atualizar nota de uma matéria",
+    description="Atualiza uma nota de uma matéria feita pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
 )
 def atualizar_nota(
@@ -497,6 +535,8 @@ def atualizar_nota(
 
 @router.post(
     '/adicionar-dificuldade', status_code=status.HTTP_201_CREATED,
+    summary="Adicionar dificuldade a uma matéria",
+    description="Adiciona uma dificuldade a uma matéria pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
 )
 def adicionar_dificuldade(
@@ -530,6 +570,8 @@ def adicionar_dificuldade(
 
 @router.post(
     '/deletar-dificuldade', status_code=status.HTTP_200_OK,
+    summary="Deletar dificuldade de uma matéria",
+    description="Deleta uma dificuldade de uma matéria feita pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
 )
 def deletar_dificuldade(
@@ -558,6 +600,8 @@ def deletar_dificuldade(
 
 @router.post(
     '/atualizar-dificuldade', status_code=status.HTTP_200_OK,
+    summary="Atualizar dificuldade de uma matéria",
+    description="Atualiza uma dificuldade de uma matéria feita pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
 )
 def atualizar_dificuldade(

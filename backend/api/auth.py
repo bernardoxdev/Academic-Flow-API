@@ -27,7 +27,11 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 def is_matricula(valor: str) -> bool:
     return valor.isdigit() and len(valor) == 10
 
-@router.post("/login", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/login", status_code=status.HTTP_201_CREATED,
+    summary="Login do usuário",
+    description="Realiza o login do usuário e retorna os tokens de acesso e refresh"
+)
 def login(
     data: LoginRequest,
     db: Session = Depends(get_db)
@@ -68,7 +72,11 @@ def login(
         "token_type": "bearer"
     }
 
-@router.post("/refresh")
+@router.post(
+    "/refresh",
+    summary="Refresh do token de acesso",
+    description="Gera um novo token de acesso usando o refresh token fornecido"
+)
 def refresh(refresh_token: str, db: Session = Depends(get_db)):
     token_db = (
         db.query(RefreshToken)
@@ -114,7 +122,11 @@ def refresh(refresh_token: str, db: Session = Depends(get_db)):
         "token_type": "bearer"
     }
 
-@router.post("/register", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register", status_code=status.HTTP_201_CREATED,
+    summary="Registrar novo usuário",
+    description="Registra um novo usuário como aluno"
+)
 def register(
     data: RegisterRequest,
     db: Session = Depends(get_db)
@@ -168,7 +180,11 @@ def register(
         "token_type": "bearer"
     }
     
-@router.post("/change-password")
+@router.post(
+    "/change-password",
+    summary="Alterar senha do usuário",
+    description="Altera a senha do usuário autenticado"
+)
 def change_password(
     data: ChangePasswordRequest,
     current_user: User = Depends(get_current_user),
@@ -182,7 +198,11 @@ def change_password(
 
     return {"status": "senha atualizada"}
 
-@router.post("/logout")
+@router.post(
+    "/logout",
+    summary="Logout do usuário",
+    description="Realiza o logout do usuário, invalidando o refresh token fornecido"
+)
 def logout(
     refresh_token: str,
     db: Session = Depends(get_db)

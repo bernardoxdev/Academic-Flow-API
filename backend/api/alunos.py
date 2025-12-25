@@ -20,6 +20,8 @@ router = APIRouter(
 
 @router.get(
     "/listar-alunos",
+    summary="Listar todos os alunos",
+    description="Retorna a lista de todos os alunos cadastrados",
     dependencies=[Depends(require_role("admin"))]
 )
 def listar_alunos(
@@ -35,6 +37,8 @@ def listar_alunos(
 
 @router.post(
     "/pode-cursar",
+    summary="Verificar se um aluno pode cursar uma matéria",
+    description="Verifica se um aluno pode cursar uma determinada matéria",
     dependencies=[Depends(require_role("monitor", "admin"))]
 )
 def pode_cursar(
@@ -54,6 +58,8 @@ def pode_cursar(
 
 @router.post(
     "/pode-cursar",
+    summary="Verificar se o aluno autenticado pode cursar uma matéria",
+    description="Verifica se o aluno autenticado pode cursar uma determinada matéria",
     dependencies=[Depends(require_role("aluno"))]
 )
 def pode_cursar(
