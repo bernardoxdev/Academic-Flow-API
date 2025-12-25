@@ -138,7 +138,7 @@ def get_todos_comentarios(
 
     return {"comentarios": comentarios}
 
-@router.get("/comentarios/todos", status_code=status.HTTP_200_OK)
+@router.get("/comentarios/todos/materia", status_code=status.HTTP_200_OK)
 def get_todos_comentarios_materia(
     id_materia: int,
     db: Session = Depends(get_db)
