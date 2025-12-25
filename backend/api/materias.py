@@ -92,8 +92,7 @@ def get_comentarios(
     registro = (
         db.query(ComentarioMateria)
         .filter_by(
-            aluno_id=aluno_id,
-            fazendo=True
+            aluno_id=aluno_id
         )
         .all()
     )
@@ -106,7 +105,7 @@ def get_comentarios(
     for r in registro:
         comentarios[r.id_materia] = r.comentario    
     
-    return comentarios
+    return {"comentarios": comentarios}
 
 @router.get(
     '/dificuldades', status_code=status.HTTP_200_OK,
