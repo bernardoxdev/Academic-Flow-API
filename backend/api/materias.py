@@ -15,6 +15,7 @@ from backend.models.comentario_materia import ComentarioMateria
 from backend.models.nota_materia import NotaMateria
 from backend.models.dificuldade_materia import DificuldadeMateria
 from backend.models.fazendo_materia import FazendoMateria
+from backend.models.aluno_materia import AlunoMateria
 from backend.models.schemas import (
     MateriaFazendo,
     AdicionarComentario,
@@ -162,6 +163,34 @@ def get_notas(
         notas[r.id_materia] = r.nota    
     
     return notas
+
+@router.get(
+    '/faltando', status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_role("aluno"))]
+)
+def get_faltando(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    aluno_id = current_user.id
+    
+    registro = (
+        db.query(AlunoMateria)
+        .filter_by(
+            aluno_id=aluno_id,
+            concluida=False
+        )
+        .all()
+    )
+    
+    if not registro:
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="não encontrado")
+    
+    materias_faltando = [ registro.materia_codigo for registro in registro ]
+    
+    return {
+        "materias": materias_faltando
+    }
 
 @router.post(
     '/marcar-fazendo', status_code=status.HTTP_200_OK,
