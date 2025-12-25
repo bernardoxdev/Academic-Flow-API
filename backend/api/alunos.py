@@ -18,6 +18,21 @@ router = APIRouter(
     tags=["Alunos"]
 )
 
+@router.get(
+    "/listar-alunos",
+    dependencies=[Depends(require_role("admin"))]
+)
+def listar_alunos(
+    db: Session = Depends(get_db)
+):
+    registros = (
+        db.query(User)
+        .filter_by(role="aluno")
+        .all()
+    )
+    
+    return {"alunos": registros}
+
 @router.post(
     "/pode-cursar",
     dependencies=[Depends(require_role("monitor", "admin"))]
@@ -50,20 +65,6 @@ def pode_cursar(
     return {
         "pode_cursar": regras.pode_cursar(current_user.id, data.materia)
     }
-@router.get(
-    "/listar-alunos",
-    dependencies=[Depends(require_role("admin"))]
-)
-def listar_alunos(
-    db: Session = Depends(get_db)
-):
-    registros = (
-        db.query(User)
-        .filter_by(role="aluno")
-        .all()
-    )
-    
-    return {"alunos": registros}
 
 if __name__ == '__main__':
     pass

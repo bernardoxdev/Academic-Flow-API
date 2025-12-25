@@ -81,6 +81,88 @@ def get_fazendo(
         "materias": materias_fazendo
     }
 
+@router.get('/comentarios', status_code=status.HTTP_200_OK)
+def get_comentarios(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    aluno_id = current_user.id
+    
+    registro = (
+        db.query(ComentarioMateria)
+        .filter_by(
+            aluno_id=aluno_id,
+            fazendo=True
+        )
+        .all()
+    )
+    
+    if not registro:
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="não encontrado")
+    
+    comentarios = {}
+    
+    for r in registro:
+        comentarios[r.id_materia] = r.comentario    
+    
+    return comentarios
+
+@router.get(
+    '/dificuldades', status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_role("aluno"))]
+)
+def get_dificuldades(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    aluno_id = current_user.id
+    
+    registro = (
+        db.query(DificuldadeMateria)
+        .filter_by(
+            aluno_id=aluno_id
+        )
+        .all()
+    )
+    
+    if not registro:
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="não encontrado")
+    
+    dificuldades = {}
+    
+    for r in registro:
+        dificuldades[r.id_materia] = r.dificuldade    
+    
+    return dificuldades
+
+@router.get(
+    '/notas', status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_role("aluno"))]
+)
+def get_notas(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    aluno_id = current_user.id
+    
+    registro = (
+        db.query(NotaMateria)
+        .filter_by(
+            aluno_id=aluno_id
+        )
+        .all()
+    )
+    
+    if not registro:
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="não encontrado")
+    
+    notas = {}
+    
+    for r in registro:
+        notas[r.id_materia] = r.nota    
+    
+    return notas
+
 @router.post(
     '/marcar-fazendo', status_code=status.HTTP_200_OK,
     dependencies=[Depends(require_role("aluno"))]
@@ -142,32 +224,6 @@ def desmarcar_get(
     db.commit()
     
     return {"status": "ok"}
-
-@router.get('/comentarios', status_code=status.HTTP_200_OK)
-def get_comentarios(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    aluno_id = current_user.id
-    
-    registro = (
-        db.query(ComentarioMateria)
-        .filter_by(
-            aluno_id=aluno_id,
-            fazendo=True
-        )
-        .all()
-    )
-    
-    if not registro:
-        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="não encontrado")
-    
-    comentarios = {}
-    
-    for r in registro:
-        comentarios[r.id_materia] = r.comentario    
-    
-    return comentarios
 
 @router.post(
     '/adicionar-comentario', status_code=status.HTTP_201_CREATED,
@@ -438,62 +494,6 @@ def atualizar_dificuldade(
     db.commit()
     
     return {"status": "ok"}
-
-@router.get(
-    '/dificuldades', status_code=status.HTTP_200_OK,
-    dependencies=[Depends(require_role("aluno"))]
-)
-def get_dificuldades(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    aluno_id = current_user.id
-    
-    registro = (
-        db.query(DificuldadeMateria)
-        .filter_by(
-            aluno_id=aluno_id
-        )
-        .all()
-    )
-    
-    if not registro:
-        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="não encontrado")
-    
-    dificuldades = {}
-    
-    for r in registro:
-        dificuldades[r.id_materia] = r.dificuldade    
-    
-    return dificuldades
-
-@router.get(
-    '/notas', status_code=status.HTTP_200_OK,
-    dependencies=[Depends(require_role("aluno"))]
-)
-def get_notas(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    aluno_id = current_user.id
-    
-    registro = (
-        db.query(NotaMateria)
-        .filter_by(
-            aluno_id=aluno_id
-        )
-        .all()
-    )
-    
-    if not registro:
-        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="não encontrado")
-    
-    notas = {}
-    
-    for r in registro:
-        notas[r.id_materia] = r.nota    
-    
-    return notas
 
 if __name__ == '__main__':
     pass
