@@ -2,6 +2,7 @@ import polars as pl
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from typing import List
 
 from backend.core.database import get_db
 from backend.core.lazy_loader import LazyLoader
@@ -27,6 +28,15 @@ from backend.models.schemas import (
     AtualizarNota,
     RemoverNota
 )
+from backend.models.return_schemas import (
+    Materias,
+    MateriasFazendo,
+    Comentarios,
+    Dificuldades,
+    Notas,
+    MateriasFaltando,
+    Status
+)
 
 router = APIRouter(
     prefix="/materias",
@@ -35,6 +45,7 @@ router = APIRouter(
 
 @router.get(
     '/', status_code=status.HTTP_200_OK,
+    response_model=List[Materias],
     summary="Listar todas as matérias",
     description="Retorna a lista de todas as matérias disponíveis",
     dependencies=[Depends(require_role("aluno"))]
@@ -57,6 +68,7 @@ def index():
     
 @router.get(
     '/fazendo', status_code=status.HTTP_200_OK,
+    response_model=MateriasFazendo,
     summary="Listar matérias que o aluno está fazendo",
     description="Retorna a lista de matérias que o aluno autenticado está fazendo",
     dependencies=[Depends(require_role("aluno"))]
@@ -81,12 +93,13 @@ def get_fazendo(
     
     materias_fazendo = [ registro.id_materia for registro in registro ]
     
-    return {
-        "materias": materias_fazendo
-    }
+    return MateriasFazendo(
+        materias=materias_fazendo
+    )
 
 @router.get(
     '/comentarios', status_code=status.HTTP_200_OK,
+    response_model=Comentarios,
     summary="Listar comentários do aluno",
     description="Retorna a lista de comentários feitos pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
@@ -113,7 +126,7 @@ def get_comentarios(
     for r in registro:
         comentarios[r.id_materia] = r.comentario    
     
-    return {"comentarios": comentarios}
+    return Comentarios(comentarios=comentarios)
 
 @router.get(
     "/comentarios/todos", status_code=status.HTTP_200_OK,
@@ -152,6 +165,7 @@ def get_todos_comentarios(
 
 @router.get(
     "/comentarios/todos/materia", status_code=status.HTTP_200_OK,
+    response_model=Comentarios,
     summary="Listar todos os comentários de uma matéria específica",
     description="Retorna a lista de todos os comentários feitos por todos os alunos para uma matéria específica"
 )
@@ -183,10 +197,11 @@ def get_todos_comentarios_materia(
             detail="Nenhum comentário válido encontrado para a matéria especificada"
         )
 
-    return {"comentarios": comentarios}
+    return Comentarios(comentarios=comentarios)
 
 @router.get(
     '/dificuldades', status_code=status.HTTP_200_OK,
+    response_model=Dificuldades,
     summary="Lista o nível de dificuldade das matérias do aluno",
     description="Retorna o nível de dificuldade que o aluno autenticado atribuiu às matérias",
     dependencies=[Depends(require_role("aluno"))]
@@ -213,10 +228,11 @@ def get_dificuldades(
     for r in registro:
         dificuldades[r.id_materia] = r.dificuldade    
     
-    return dificuldades
+    return Dificuldades(dificuldades=dificuldades)
 
 @router.get(
     '/notas', status_code=status.HTTP_200_OK,
+    response_model=Notas,
     summary="Lista as notas das matérias do aluno",
     description="Retorna as notas que o aluno autenticado atribuiu às matérias",
     dependencies=[Depends(require_role("aluno"))]
@@ -243,10 +259,11 @@ def get_notas(
     for r in registro:
         notas[r.id_materia] = r.nota    
     
-    return notas
+    return Notas(notas=notas)
 
 @router.get(
     '/faltando', status_code=status.HTTP_200_OK,
+    response_model=MateriasFaltando,
     summary="Listar matérias faltando para o aluno",
     description="Retorna a lista de matérias que o aluno autenticado ainda não concluiu",
     dependencies=[Depends(require_role("aluno"))]
@@ -271,12 +288,13 @@ def get_faltando(
     
     materias_faltando = [ registro.materia_codigo for registro in registro ]
     
-    return {
-        "materias": materias_faltando
-    }
+    return MateriasFaltando(
+        materias=materias_faltando
+    )
 
 @router.post(
     '/marcar-fazendo', status_code=status.HTTP_200_OK,
+    response_model=Status,
     summary="Marcar matéria como sendo feita",
     description="Marca uma matéria como sendo feita pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
@@ -309,10 +327,11 @@ def marcar_get(
         
     db.commit()
     
-    return {"status": "ok"}
+    return Status(status="ok")
 
 @router.post(
     '/desmarcar-fazendo', status_code=status.HTTP_200_OK,
+    response_model=Status,
     summary="Desmarcar matéria como sendo feita",
     description="Desmarca uma matéria como sendo feita pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
@@ -339,10 +358,11 @@ def desmarcar_get(
     registro.fazendo = False
     db.commit()
     
-    return {"status": "ok"}
+    return Status(status="ok")
 
 @router.post(
     '/adicionar-comentario', status_code=status.HTTP_201_CREATED,
+    response_model=Status,
     summary="Adicionar comentário a uma matéria",
     description="Adiciona um comentário a uma matéria pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
@@ -374,10 +394,11 @@ def adicionar_comentario(
     db.add(registro)
     db.commit()
     
-    return {"status": "ok"}
+    return Status(status="ok")
 
 @router.post(
     '/deletar-comentario', status_code=status.HTTP_200_OK,
+    response_model=Status,
     summary="Deletar comentário de uma matéria",
     description="Deleta um comentário de uma matéria feito pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
@@ -404,10 +425,11 @@ def deletar_comentario(
     db.delete()
     db.commit()
     
-    return {"status": "ok"}
+    return Status(status="ok")
 
 @router.post(
     '/atualizar-comentario', status_code=status.HTTP_200_OK,
+    response_model=Status,
     summary="Atualizar comentário de uma matéria",
     description="Atualiza um comentário de uma matéria feito pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
@@ -435,10 +457,11 @@ def atualizar_comentario(
         
     db.commit()
     
-    return {"status": "ok"}
+    return Status(status="ok")
 
 @router.post(
     '/adicionar-nota', status_code=status.HTTP_201_CREATED,
+    response_model=Status,
     summary="Adicionar nota a uma matéria",
     description="Adiciona uma nota a uma matéria pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
@@ -470,10 +493,11 @@ def adicionar_nota(
     db.add(registro)
     db.commit()
     
-    return {"status": "ok"}
+    return Status(status="ok")
 
 @router.post(
     '/deletar-nota', status_code=status.HTTP_200_OK,
+    response_model=Status,
     summary="Deletar nota de uma matéria",
     description="Deleta uma nota de uma matéria feita pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
@@ -500,10 +524,11 @@ def deletar_nota(
     db.delete()
     db.commit()
     
-    return {"status": "ok"}
+    return Status(status="ok")
 
 @router.post(
     '/atualizar-nota', status_code=status.HTTP_200_OK,
+    response_model=Status,
     summary="Atualizar nota de uma matéria",
     description="Atualiza uma nota de uma matéria feita pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
@@ -531,10 +556,11 @@ def atualizar_nota(
     
     db.commit()
     
-    return {"status": "ok"}
+    return Status(status="ok")
 
 @router.post(
     '/adicionar-dificuldade', status_code=status.HTTP_201_CREATED,
+    response_model=Status,
     summary="Adicionar dificuldade a uma matéria",
     description="Adiciona uma dificuldade a uma matéria pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
@@ -566,10 +592,11 @@ def adicionar_dificuldade(
     db.add(registro)
     db.commit()
     
-    return {"status": "ok"}
+    return Status(status="ok")
 
 @router.post(
     '/deletar-dificuldade', status_code=status.HTTP_200_OK,
+    response_model=Status,
     summary="Deletar dificuldade de uma matéria",
     description="Deleta uma dificuldade de uma matéria feita pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
@@ -596,10 +623,11 @@ def deletar_dificuldade(
     db.delete()
     db.commit()
     
-    return {"status": "ok"}
+    return Status(status="ok")
 
 @router.post(
     '/atualizar-dificuldade', status_code=status.HTTP_200_OK,
+    response_model=Status,
     summary="Atualizar dificuldade de uma matéria",
     description="Atualiza uma dificuldade de uma matéria feita pelo aluno autenticado",
     dependencies=[Depends(require_role("aluno"))]
@@ -627,7 +655,7 @@ def atualizar_dificuldade(
     
     db.commit()
     
-    return {"status": "ok"}
+    return Status(status="ok")
 
 if __name__ == '__main__':
     pass

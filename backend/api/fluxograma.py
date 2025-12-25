@@ -1,5 +1,6 @@
 import polars as pl
 
+from typing import List
 from fastapi import APIRouter, Query, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import date
@@ -13,11 +14,19 @@ from backend.core.security import (
 )
 from backend.models.aluno_materia import AlunoMateria
 from backend.models.user import User
+from backend.models.return_schemas import (
+    FluxogramaReturn,
+    RequesitosCompletos,
+    Progresso,
+    Status
+)
 
 router = APIRouter(prefix="/fluxograma", tags=["Fluxograma"])
 
 @router.get(
     "/", status_code=status.HTTP_200_OK,
+    response_model=List[FluxogramaReturn],
+    summary="Obter Fluxograma Completo",
     description="Retorna o fluxograma completo de matérias com seus pré-requisitos"
 )
 def fluxograma():
@@ -74,6 +83,8 @@ def fluxograma():
 
 @router.get(
     "/requisitos-completos", status_code=status.HTTP_200_OK,
+    response_model=RequesitosCompletos,
+    summary="Obter Pré-Requisitos Completos",
     description="Retorna a lista completa de pré-requisitos para uma matéria"
 )
 def requisitos_completos(codigo: str = Query(...)):
@@ -109,14 +120,16 @@ def requisitos_completos(codigo: str = Query(...)):
         .to_dicts()
     )
     
-    return {
-        "materia": codigo,
-        "quantidade": len(resultado),
-        "pre_requisitos": resultado
-    }
+    return RequesitosCompletos(
+        materia=codigo,
+        quantidade=len(resultado),
+        pre_requisitos=resultado
+    )
 
 @router.post(
     "/progresso", status_code=status.HTTP_200_OK,
+    response_model=Progresso,
+    summary="Obter Progresso do Aluno",
     description="Retorna o progresso do aluno nas matérias",
     dependencies=[Depends(require_role("aluno"))]
 )
@@ -136,14 +149,16 @@ def progresso_aluno(
         registro.materia_codigo for registro in registros
     ]
 
-    return {
-        "aluno_id": aluno_id,
-        "materias_concluidas": materias_concluidas,
-        "quantidade": len(materias_concluidas)
-    }
+    return Progresso(
+        aluno_id=aluno_id,
+        materias_concluidas=materias_concluidas,
+        quantidade=len(materias_concluidas)
+    )
 
 @router.post(
     "/concluir", status_code=status.HTTP_200_OK,
+    response_model=Status,
+    summary="Concluir Matéria",
     description="Marca uma matéria como concluída para o aluno",
     dependencies=[Depends(require_role("aluno"))]
 )
@@ -176,10 +191,12 @@ def concluir_materia(
         registro.data_conclusao = date.today()
 
     db.commit()
-    return {"status": "ok"}
+    return Status(status="ok")
 
 @router.post(
     "/desmarcar", status_code=status.HTTP_200_OK,
+    response_model=Status,
+    summary="Desmarcar Matéria",
     description="Desmarca uma matéria como concluída para o aluno",
     dependencies=[Depends(require_role("aluno"))]
 )
@@ -206,7 +223,7 @@ def desmarcar_materia(
     registro.data_conclusao = None
 
     db.commit()
-    return {"status": "ok"}
+    return Status(status="ok")
 
 if __name__ == "__main__":
     pass

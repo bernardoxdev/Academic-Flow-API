@@ -19,6 +19,11 @@ from backend.models.schemas import (
     RegisterRequest,
     ChangePasswordRequest
 )
+from backend.models.return_schemas import (
+    LoginAndRegister,
+    Status,
+    Refresh
+)
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -29,6 +34,7 @@ def is_matricula(valor: str) -> bool:
 
 @router.post(
     "/login", status_code=status.HTTP_201_CREATED,
+    response_model=LoginAndRegister,
     summary="Login do usuário",
     description="Realiza o login do usuário e retorna os tokens de acesso e refresh"
 )
@@ -66,14 +72,15 @@ def login(
         db.rollback()
         raise HTTPException(500, "Erro ao gerar tokens")
 
-    return {
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "token_type": "bearer"
-    }
+    return LoginAndRegister(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        token_type="bearer"
+    )
 
 @router.post(
     "/refresh", status_code=status.HTTP_200_OK,
+    response_model=Refresh,
     summary="Refresh do token de acesso",
     description="Gera um novo token de acesso usando o refresh token fornecido"
 )
@@ -117,13 +124,14 @@ def refresh(refresh_token: str, db: Session = Depends(get_db)):
         "role": user.role
     })
 
-    return {
-        "access_token": new_access_token,
-        "token_type": "bearer"
-    }
+    return Refresh(
+        access_token=new_access_token,
+        token_type="bearer"
+    )
 
 @router.post(
     "/register", status_code=status.HTTP_201_CREATED,
+    response_model=LoginAndRegister,
     summary="Registrar novo usuário",
     description="Registra um novo usuário como aluno"
 )
@@ -174,14 +182,15 @@ def register(
         db.rollback()
         raise HTTPException(500, "Erro ao gerar tokens")
 
-    return {
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "token_type": "bearer"
-    }
+    return LoginAndRegister(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        token_type="bearer"
+    )
     
 @router.post(
     "/change-password", status_code=status.HTTP_200_OK,
+    response_model=Status,
     summary="Alterar senha do usuário",
     description="Altera a senha do usuário autenticado"
 )
@@ -196,10 +205,11 @@ def change_password(
 
     db.commit()
 
-    return {"status": "senha atualizada"}
+    return Status(status="senha atualizada")
 
 @router.post(
     "/logout", status_code=status.HTTP_200_OK,
+    response_model=Status,
     summary="Logout do usuário",
     description="Realiza o logout do usuário, invalidando o refresh token fornecido"
 )
@@ -217,7 +227,7 @@ def logout(
         db.delete(token)
         db.commit()
 
-    return {"detail": "Logout realizado"}
+    return Status(status="Logout realizado")
 
 if __name__ == '__main__':
     pass
