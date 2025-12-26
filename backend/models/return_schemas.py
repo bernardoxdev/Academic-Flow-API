@@ -48,11 +48,8 @@ class MateriasFazendo(BaseModel):
 class Comentarios(BaseModel):
     comentarios: Dict[str, int]
     
-class Dificuldade(BaseModel):
-    id_materia: int
-    
 class Dificuldades(BaseModel):
-    dificuldades: Dict[Dificuldade]
+    dificuldades: Dict[int, int]
 
 class Notas(BaseModel): 
     notas: Dict[int, int]
