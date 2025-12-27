@@ -36,14 +36,6 @@ def aceitar_pedido(
 ):
     return AmigoCore.aceitar_amizade(current_user.id, amizade_id, db)
 
-@router.delete("/recusar")
-def recusar_pedido(
-    amizade_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    return AmigoCore.recusar_amizade(current_user.id, amizade_id, db)
-
 @router.post("/bloquear")
 def bloquear_usuario(
     amigo_id: int,
@@ -51,6 +43,14 @@ def bloquear_usuario(
     current_user: User = Depends(get_current_user)
 ):
     return AmigoCore.bloquear_usuario(current_user.id, amigo_id, db)
+
+@router.delete("/recusar")
+def recusar_pedido(
+    amizade_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return AmigoCore.recusar_amizade(current_user.id, amizade_id, db)
 
 if __name__ ==  '__main__':
     pass
