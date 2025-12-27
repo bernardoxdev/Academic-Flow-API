@@ -1,4 +1,9 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import (
+    Column,
+    Integer,
+    String
+)
+
 from backend.core.database import Base
 
 class User(Base):

@@ -1,4 +1,9 @@
-from sqlalchemy import Column, Integer
+from sqlalchemy import (
+    Column,
+    Integer,
+    ForeignKey
+)
+
 from backend.core.database import Base
 
 class DificuldadeMateria(Base):
@@ -6,5 +11,5 @@ class DificuldadeMateria(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     id_materia = Column(Integer, index=True, nullable=False)
-    id_aluno = Column(Integer, index=True, nullable=False)
+    id_aluno = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
     dificuldade = Column(Integer, nullable=False)
