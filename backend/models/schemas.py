@@ -1,4 +1,6 @@
 from pydantic import BaseModel
+from enum import Enum
+from typing import List
 
 class PodeCursarRequest(BaseModel):
     aluno_id: int
@@ -62,3 +64,33 @@ class AtualizarDificuldade(BaseModel):
 
 class RemoverDificuldade(BaseModel):
     id_dificuldade: int
+    
+class StatusAmizadeEnum(str, Enum):
+    pendente = "pendente"
+    aceita = "aceita"
+    bloqueada = "bloqueada"
+
+class AmizadeCreate(BaseModel):
+    amigo_id: int
+
+class AmizadeResponse(BaseModel):
+    id: int
+    user_id: int
+    amigo_id: int
+    status: StatusAmizadeEnum
+
+    class Config:
+        from_attributes = True
+
+class UsuarioResumo(BaseModel):
+    id: int
+    username: str
+    email: str
+
+    class Config:
+        from_attributes = True
+
+class AmigoResponse(BaseModel):
+    amizade_id: int
+    status: StatusAmizadeEnum
+    amigo: UsuarioResumo
