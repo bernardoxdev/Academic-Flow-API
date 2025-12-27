@@ -37,7 +37,7 @@ app = FastAPI(
     
     Um projeto de ALUNOS para ALUNOS.
     """,
-    version="BETA"
+    version="v0.1.0-BETA"
 )
 
 app.add_middleware(
