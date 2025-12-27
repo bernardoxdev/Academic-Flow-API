@@ -1,63 +1,37 @@
 # 📚 Academic Flow API
 
-![Python](https://img.shields.io/badge/Python-3.10+-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-Framework-green)
-![License](https://img.shields.io/badge/License-GPL--3.0-red)
-![Status](https://img.shields.io/badge/Status-Active-success)
-
-Academic Flow API is a **centralized RESTful backend** designed to support computer science students from UFSJ (Universidade Federal de São João Del Rei), providing authentication, academic data handling, and system integration.
+API RESTful central da plataforma **Academic Flow**, responsável por autenticação, gestão acadêmica e integração do sistema educacional da UFSJ.
 
 ---
 
-## 📌 Project Overview
+## 📌 Visão Geral
 
-The **Academic Flow API** serves as the core backend for all Academic Flow projects.
-It was designed following best practices in **software architecture**, **security**, and **scalability**, making it suitable for **academic systems, portfolios, and TCC projects**.
+A **Academic Flow API** é o núcleo backend reutilizável de todos os projetos da plataforma Academic Flow.
+Ela fornece endpoints seguros, padronizados e escaláveis para aplicações acadêmicas, permitindo o gerenciamento completo de dados educacionais.
 
-### Project Goals
+### Objetivos do Projeto
 
-- Centralize academic rules and data
-- Enable secure frontend integration
-- Apply clean backend architecture
-- Serve as a reusable academic platform
-
----
-
-## 🎓 Academic & Portfolio Context
-
-This project can be used as:
-
-- 📘 **Undergraduate Final Project (TCC)**
-- 💼 **Professional Backend Portfolio**
-- 🧪 **Educational Case Study**
-- 🚀 **Scalable Academic Platform**
-
-Concepts demonstrated:
-
-- REST API Design
-- JWT Authentication
-- Database Modeling (ER)
-- Secure Authentication Flow
-- Modular Backend Architecture
+- Centralizar regras e dados acadêmicos
+- Facilitar integração com aplicações frontend
+- Garantir segurança e integridade das informações
+- Permitir expansão modular para novos recursos
 
 ---
 
-## 🚀 Technologies Used
+## 🚀 Tecnologias Utilizadas
 
 - **Python**
 - **FastAPI**
 - **SQLAlchemy**
 - **Pydantic**
-- **JWT (Access & Refresh Token)**
-- **PostgreSQL** (production)
-- **SQLite** (development)
+- **JWT (Access Token e Refresh Token)**
+- **PostgreSQL**
 - **Docker**
-- **Render**
 - **Swagger / OpenAPI**
 
 ---
 
-## 📂 Project Structure
+## 📂 Estrutura do Projeto
 
 ```
 Academic-Flow-API/
@@ -78,95 +52,58 @@ Academic-Flow-API/
 ├── LICENSE
 ├── README.md
 └── SECURITY.md
-
 ```
 
 ---
 
-## 🔐 Authentication
+## 🔐 Autenticação
 
-The API uses **JWT-based authentication**.
+A API utiliza JWT com Access Token e Refresh Token.
 
-Required header:
+Header obrigatório:
 
 ```
 Authorization: Bearer <access_token>
 ```
 
-Security features:
+---
 
-- Encrypted passwords (bcrypt)
-- Token-based authentication
-- Refresh token mechanism
-- Role-based access control
+## 📘 Documentação da API
+
+Swagger:
+
+- https://academic-flow-api.onrender.com/docs
 
 ---
 
-## 📘 API Documentation
+## 🐳 Docker
 
-Interactive API documentation is automatically generated.
-
-- Swagger UI: https://academic-flow-api.onrender.com/docs
-
----
-
-## 🧪 Example Request
-
-```http
-POST /auth/login
-Content-Type: application/json
-
-{
-  "username": "student01",
-  "password": "password123"
-}
 ```
-
----
-
-## 🐳 Docker Usage
-
-```bash
 docker build -t academic-flow-api .
 docker run -p 8000:8000 academic-flow-api
 ```
 
 ---
 
-## 🚀 Deployment (Render)
+## 🚀 Deploy
 
-```bash
+```
 ./run.sh
 ```
 
-Environment variables:
-
-- SECRET_KEY
-- ADMIN_USERNAME
-- ADMIN_PASSWORD
-- ADMIN_ROLE
-- ADMIN_EMAIL
-- ACCESS_TOKEN_EXPIRE_MINUTES
-- REFRESH_TOKEN_EXPIRE_DAYS
-- DATABASE_URL
-
-## 🛡️ Security Policy
-
-Please refer to **SECURITY.md** for vulnerability reporting and security practices.
-
 ---
 
-## 📜 License
+## 📜 Licença
 
-This project is licensed under the **GPL-3.0 License**.
+Este projeto é licenciado sob a **GNU General Public License v3.0 (GPL-3.0)**.
 
----
+Você pode:
 
-## 📌 Final Notes
+- Usar
+- Estudar
+- Modificar
+- Redistribuir
 
-Academic Flow API was developed with:
+Desde que **qualquer versão derivada também seja distribuída sob a GPL v3**.
 
-- Clean Architecture
-- Educational purpose
-- Professional backend standards
-- Scalability and security in mind
+Veja o arquivo [LICENSE](./LICENSE) para mais detalhes.
