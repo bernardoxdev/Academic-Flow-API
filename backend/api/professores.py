@@ -122,7 +122,6 @@ def atualizar_professor(
 
 @router.delete(
     '/{professor_id}', status_code=status.HTTP_204_NO_CONTENT,
-    response_model=Status,
     summary="Remover um professor",
     description="Remove um professor específico do sistema."
 )
