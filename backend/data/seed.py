@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 
-from backend.core.database import SessionLocal
+from backend.core import database
 from backend.models.user import User
 
 try:
@@ -21,7 +21,7 @@ def criar_admin_se_nao_existir():
     ADMIN_ROLE = os.getenv("ADMIN_ROLE")
     ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
     
-    db: Session = SessionLocal()
+    db: Session = database.SessionLocal()   
 
     admin = db.query(User).filter(User.username == ADMIN_USERNAME).first()
 
