@@ -1,10 +1,27 @@
 version: "3.8"
 
 services:
+  postgres:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: academicflow
+      POSTGRES_USER: academicflow
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   api:
     build:
       context: .
       dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - postgres
     ports:
       - "8000:8000"
-    restart: always
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+
+volumes:
+  postgres_data:
