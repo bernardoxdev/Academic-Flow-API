@@ -14,12 +14,13 @@ except ImportError:
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
-ADMIN_ROLE = os.getenv("ADMIN_ROLE")
-ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
 
 def criar_admin_se_nao_existir():
+    ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
+    ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+    ADMIN_ROLE = os.getenv("ADMIN_ROLE")
+    ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
+    
     db: Session = SessionLocal()
 
     admin = db.query(User).filter(User.username == ADMIN_USERNAME).first()
